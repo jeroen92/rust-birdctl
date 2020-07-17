@@ -1,13 +1,12 @@
 use clap::{App, Arg, SubCommand};
 
 mod cli;
+mod config;
 mod socket;
-
-const PATH: &str = "/home/jschutrup/Projects/rust/bird/files/socket/bird.ctl";
 
 fn main() {
     let matches = App::new("BirdCTL")
-        .version("0.0.1")
+        .version(config::VERSION)
         .author("Jeroen S. <jeroenschutrup@hotmail.nl")
         .about("CLI to interact with Bird routing daemon")
         .subcommand(
