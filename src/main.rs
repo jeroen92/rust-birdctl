@@ -1,4 +1,4 @@
-use clap::{App, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 
 mod cli;
 mod config;
@@ -9,6 +9,16 @@ fn main() {
         .version(config::VERSION)
         .author("Jeroen S. <jeroenschutrup@hotmail.nl")
         .about("CLI to interact with Bird routing daemon")
+        .setting(AppSettings::SubcommandRequiredElseHelp)
+        .arg(
+            Arg::with_name("socket_path")
+                .short("s")
+                .long("socket")
+                .help("The path to the bird socket")
+                .takes_value(true)
+                .global(true)
+                .default_value("/var/run/bird.ctl"),
+        )
         .subcommand(
             SubCommand::with_name("connect").about("Test the connection to the Bird socket"),
         )

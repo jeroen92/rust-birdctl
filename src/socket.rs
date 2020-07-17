@@ -7,6 +7,7 @@ pub struct CmdResult {
 }
 
 pub struct BirdSocket {
+    // path: &str requires a lifetime, so make it a String first
     path: String,
     socket: UnixStream,
 }
