@@ -1,5 +1,6 @@
 use std::os::unix::net::UnixStream;
-use std::io::{Write, Read, BufRead};
+use std::io::{Write, Read, BufRead, BufReader};
+use std::time::Duration;
 
 pub struct CmdResult {
     command: String,
@@ -8,7 +9,7 @@ pub struct CmdResult {
 }
 
 pub struct BirdSocket {
-    // path: &str requires a lifetime, so make it a String first
+    dirty: bool,
     path: String,
     socket: UnixStream,
 }
@@ -16,6 +17,10 @@ pub struct BirdSocket {
 impl BirdSocket {
 
     pub fn send_command(&mut self, command: &str) {
+        if self.dirty {
+            panic!("Bird socket is dirty. Read out previously submitted command first!");
+        }
+        self.dirty = true;
         let mut prepared_command = String::new();
         prepared_command.push_str(command);
         prepared_command.push('\n');
@@ -23,17 +28,24 @@ impl BirdSocket {
     }
 
     pub fn read_output(&mut self) -> String {
-        // Use BufRead read_lines()
         let mut command_output = String::new();
-//        let line_buffer = BufRead::new(self.socket.read);
-//        match self.socket.read_to_string(&mut command_output) {
-//            Ok(no_bytes) => {
-//                println!("Read {} bytes from Bird socket", no_bytes);
-//            },
-//            Err(_) => {
-//                println!("Could not read data from bird socket")
-//            }
-//        }
+        if !self.dirty {
+            return command_output;
+        };
+
+        let line_buffer = BufReader::new(&self.socket);
+        for line in line_buffer.lines() {
+            match line {
+                Ok(line_str) => {
+                    command_output.push_str(&line_str);
+                    command_output.push('\n');
+                },
+                Err(error) => match error.kind() {
+                    std::io::ErrorKind::WouldBlock => break,
+                    _ => panic!("Uncaught error: {}", error),
+                }
+            }
+        }
         command_output
     }
 }
@@ -48,9 +60,14 @@ pub fn connect(path: String) -> BirdSocket {
         Err(error) => panic!("Couldn't connect to socket at {}: {}", path, error),
     };
 
+    let socket_timeout = Duration::new(0, 250);
+    unix_sock.set_read_timeout(Some(socket_timeout))
+        .expect("Couldn't set read timeout");
+
     let bird_socket = BirdSocket {
         path: path,
         socket: unix_sock,
+        dirty: false,
     };
     bird_socket
 }
