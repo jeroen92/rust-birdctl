@@ -9,6 +9,27 @@ pub struct BirdSocket {
 
 impl BirdSocket {
 
+    pub fn new(path: String) -> BirdSocket {
+        if path.trim() == "" {
+            panic!("Empty path was given");
+        }
+    
+        let unix_sock = match UnixStream::connect(&path) {
+            Ok(socket) => socket,
+            Err(error) => panic!("Couldn't connect to socket at {}: {}", path, error),
+        };
+    
+        let socket_timeout = Duration::new(0, 250);
+        unix_sock.set_read_timeout(Some(socket_timeout))
+            .expect("Couldn't set read timeout");
+    
+        let bird_socket = BirdSocket {
+            socket: unix_sock,
+            dirty: false,
+        };
+        bird_socket
+    }
+
     pub fn send_command(&mut self, command: &str) {
         if self.dirty {
             panic!("Bird socket is dirty. Read out previously submitted command first!");
@@ -42,25 +63,4 @@ impl BirdSocket {
         self.dirty = false;
         command_output
     }
-}
-
-pub fn connect(path: String) -> BirdSocket {
-    if path.trim() == "" {
-        panic!("Empty path was given");
-    }
-
-    let unix_sock = match UnixStream::connect(&path) {
-        Ok(socket) => socket,
-        Err(error) => panic!("Couldn't connect to socket at {}: {}", path, error),
-    };
-
-    let socket_timeout = Duration::new(0, 250);
-    unix_sock.set_read_timeout(Some(socket_timeout))
-        .expect("Couldn't set read timeout");
-
-    let bird_socket = BirdSocket {
-        socket: unix_sock,
-        dirty: false,
-    };
-    bird_socket
 }
