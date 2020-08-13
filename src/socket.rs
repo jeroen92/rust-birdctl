@@ -1,16 +1,9 @@
 use std::os::unix::net::UnixStream;
-use std::io::{Write, Read, BufRead, BufReader};
+use std::io::{Write, BufRead, BufReader};
 use std::time::Duration;
-
-pub struct CmdResult {
-    command: String,
-    success: bool,
-    response: String,
-}
 
 pub struct BirdSocket {
     dirty: bool,
-    path: String,
     socket: UnixStream,
 }
 
@@ -24,7 +17,7 @@ impl BirdSocket {
         let mut prepared_command = String::new();
         prepared_command.push_str(command);
         prepared_command.push('\n');
-        self.socket.write_all(prepared_command.as_bytes());
+        self.socket.write_all(prepared_command.as_bytes()).expect("Failed to write to socket");
     }
 
     pub fn read_output(&mut self) -> String {
@@ -46,6 +39,7 @@ impl BirdSocket {
                 }
             }
         }
+        self.dirty = false;
         command_output
     }
 }
@@ -65,18 +59,8 @@ pub fn connect(path: String) -> BirdSocket {
         .expect("Couldn't set read timeout");
 
     let bird_socket = BirdSocket {
-        path: path,
         socket: unix_sock,
         dirty: false,
     };
     bird_socket
-}
-
-pub fn submit_command(command: String) -> CmdResult {
-    let result = CmdResult {
-        command: command,
-        success: false,
-        response: String::from("Mocked response"),
-    };
-    result
 }
