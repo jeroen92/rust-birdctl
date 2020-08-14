@@ -4,7 +4,7 @@ pub fn parse(data: String) -> String {
         match line.chars().next() {
             Some('\n') => continue,
             Some(' ') => {
-                results.push_str(&line);
+                results.push_str(line.chars().skip(1).collect::<String>().as_str());
                 results.push('\n');
                 continue
             },
