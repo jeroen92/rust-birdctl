@@ -20,6 +20,8 @@ pub fn run_command(cli_arguments: &ArgMatches) {
     let command = cli_arguments.value_of("command").unwrap();
     bird_ctl.send_command(&command);
     let raw_output = bird_ctl.read_output();
-    let parsed_output = output::parse(raw_output);
-    println!("{}", parsed_output);
+    match output::parse(raw_output) {
+        Ok(parsed_output) => println!("{}", parsed_output),
+        Err(_) => println!("An error occured"),
+    }
 }

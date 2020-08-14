@@ -4,6 +4,7 @@ mod cli;
 mod config;
 mod socket;
 mod output;
+mod error;
 
 fn main() {
     let matches = App::new("BirdCTL")

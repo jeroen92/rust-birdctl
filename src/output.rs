@@ -1,4 +1,6 @@
-pub fn parse(data: String) -> String {
+use crate::error;
+
+pub fn parse(data: String) -> Result<String, error::BirdError> {
     let mut results = String::new();
     for line in data.lines() {
         match line.chars().next() {
@@ -15,7 +17,8 @@ pub fn parse(data: String) -> String {
 
         match preamble {
             0001 => println!("Welcome to Bird!"),
-            0000 => return results,
+            9001 => return Err(error::BirdError),
+            0000 => return Ok(results),
             _ => {
                 results.push_str(line.chars().skip(5).collect::<String>().as_str());
                 results.push('\n');
