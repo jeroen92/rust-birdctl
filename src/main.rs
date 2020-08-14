@@ -3,6 +3,7 @@ use clap::{App, AppSettings, Arg, SubCommand};
 mod cli;
 mod config;
 mod socket;
+mod output;
 
 fn main() {
     let matches = App::new("BirdCTL")
