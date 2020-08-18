@@ -25,12 +25,10 @@ fn main() {
         .subcommand(
             SubCommand::with_name("connect").about("Test the connection to the Bird socket"),
         )
-        .subcommand(SubCommand::with_name("version").about("Shows the version of BirdCTL"))
         .subcommand(SubCommand::with_name("prompt").about("Start a prompt to interact with Bird"))
         .get_matches();
     match matches.subcommand() {
         ("connect", Some(subcommand)) => cli::connect(subcommand),
-        ("version", Some(subcommand)) => cli::version(subcommand),
         ("prompt", Some(arguments)) => cli::prompt(arguments),
         _ => {}
     };
