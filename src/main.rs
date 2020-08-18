@@ -5,6 +5,7 @@ mod config;
 mod socket;
 mod output;
 mod error;
+mod prompt;
 
 fn main() {
     let matches = App::new("BirdCTL")
@@ -25,19 +26,12 @@ fn main() {
             SubCommand::with_name("connect").about("Test the connection to the Bird socket"),
         )
         .subcommand(SubCommand::with_name("version").about("Shows the version of BirdCTL"))
-        .subcommand(SubCommand::with_name("run").about("Send a command to the bird server")
-                    .arg(
-                        Arg::with_name("command")
-                        .short("c")
-                        .long("command")
-                        .help("A command to send to the bird server")
-                        .takes_value(true)
-                        .required(true)))
+        .subcommand(SubCommand::with_name("prompt").about("Start a prompt to interact with Bird"))
         .get_matches();
     match matches.subcommand() {
         ("connect", Some(subcommand)) => cli::connect(subcommand),
-        ("run", Some(subcommand)) => cli::run_command(subcommand),
         ("version", Some(subcommand)) => cli::version(subcommand),
+        ("prompt", Some(arguments)) => cli::prompt(arguments),
         _ => {}
     };
 }
